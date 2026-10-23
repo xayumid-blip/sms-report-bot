@@ -39,12 +39,15 @@ const toNumber = (s) => {
 // "Zachislenie QR: 6qz9..., 22.09.2026 v 11:43:21, 100.00 sum, ..."
 function parse(sms) {
   const m = sms.match(
-    /Zachislenie QR:\s*(\S+?),\s*(\d{2})\.(\d{2})\.(\d{4})\s+v\s+[\d:]+,\s*([\d\s.,]+?)\s*sum/i
+    /Zachislenie QR:\s*(\S+?),\s*(\d{2})\.(\d{2})\.(\d{4})\s+v\s+([\d:]+),\s*([\d\s.,]+?)\s*sum/i
   );
   if (!m) return null;
-  const amount = toNumber(m[5]);
+  const amount = toNumber(m[6]);
   if (Number.isNaN(amount)) return null;
-  return { id: m[1], date: `${m[4]}-${m[3]}-${m[2]}`, amount };
+  // QR identifikatori har safar bir xil bo'lishi mumkin (doimiy QR), shuning uchun
+  // yagona kalit sifatida QR + sana + vaqt + summa ishlatiladi
+  const date = `${m[4]}-${m[3]}-${m[2]}`;
+  return { id: `${m[1]}|${date}T${m[5]}|${amount}`, date, amount };
 }
 
 const todayTashkent = () =>
@@ -89,6 +92,18 @@ app.get('/report', async (req, res) => {
   if (req.query.key !== SECRET) return res.sendStatus(401);
   await broadcast(buildReport());
   res.send('yuborildi');
+});
+
+// Bot ishga tushishidan oldin kelgan SMS'ni qo'lda qo'shish (Telegram'ga qayta yubormaydi):
+// /add?key=SECRET&text=SMS_MATNI
+app.get('/add', (req, res) => {
+  if (req.query.key !== SECRET) return res.sendStatus(401);
+  const p = parse(String(req.query.text || ''));
+  if (!p) return res.status(400).send('SMS formati tanilmadi');
+  if (tx.some((t) => t.id === p.id)) return res.send('bu to\'lov avval qo\'shilgan');
+  tx.push(p);
+  save();
+  res.send(`qo'shildi: ${p.date}, ${p.amount}`);
 });
 
 app.get('/', (_req, res) => res.send('ok'));
