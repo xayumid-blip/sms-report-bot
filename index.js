@@ -108,6 +108,9 @@ app.get('/add', (req, res) => {
 
 app.get('/', (_req, res) => res.send('ok'));
 
-cron.schedule('0 17 * * *', () => broadcast(buildReport()), { timezone: 'Asia/Tashkent' });
+// Hisobot vaqtlari (Toshkent): 17:00 va 19:30
+for (const expr of ['0 17 * * *', '30 19 * * *']) {
+  cron.schedule(expr, () => broadcast(buildReport()), { timezone: 'Asia/Tashkent' });
+}
 
 app.listen(PORT, () => console.log(`Bot ${PORT} portda ishlayapti`));
