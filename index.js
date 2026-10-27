@@ -108,8 +108,8 @@ app.get('/add', (req, res) => {
 
 app.get('/', (_req, res) => res.send('ok'));
 
-// Hisobot vaqtlari (Toshkent): 17:00 va 19:30
-for (const expr of ['0 17 * * *', '30 19 * * *']) {
+// Hisobot vaqtlari (Toshkent): 17:00 va 19:00
+for (const expr of ['0 17 * * *', '0 19 * * *']) {
   cron.schedule(expr, () => broadcast(buildReport()), { timezone: 'Asia/Tashkent' });
 }
 
