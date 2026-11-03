@@ -108,7 +108,7 @@ app.get('/add', (req, res) => {
 
 app.get('/', (_req, res) => res.send('ok'));
 
-// Kunlik hisobot: har kuni 18:45 (Toshkent)
-cron.schedule('45 18 * * *', () => broadcast(buildReport()), { timezone: 'Asia/Tashkent' });
+// Kunlik hisobot: har kuni 18:00 (Toshkent)
+cron.schedule('0 18 * * *', () => broadcast(buildReport()), { timezone: 'Asia/Tashkent' });
 
 app.listen(PORT, () => console.log(`Bot ${PORT} portda ishlayapti`));
